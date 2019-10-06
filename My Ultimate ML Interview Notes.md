@@ -48,28 +48,7 @@ What is transfer learning?
 ## i.i.d
 
 # Optimization
-## Loss Function
-- loss function: individual training example
-- cost function: sum for all examples
-- objective function:
-- | L1 Loss | L2 Loss |
-| --- | ----------- |
-| robust | not very robust |
-| stable solution | unstable solution |
-| always 1 solution | possibly multiple solutions |
-- robust: resistant to outliers in data
-- stable
-	- L2: for any small adjustment of a data point, the regression line will always move only slightly; that is, the regression parameters are continuous functions of the data.
-	- L1: for a small horizontal adjustment of a datum, the regression line may jump a large amount. The method has continuous solutions for some data configurations; however, by moving a datum a small amount, one could “jump past” a configuration which has multiple solutions that span a region. After passing this region of solutions, the least absolute deviations line has a slope that may differ greatly from that of the previous line. 
-- Mean Squared Error (MSE)
-	- linear regression
-- cross-entropy loss
-	- measures the divergence between 2 probability distribution
-	- `H(P, Q) = -sum(P(x)logQ(x)))`
-	- `P` is the distribution of the true labels
-	- `Q` is the probability distribution of the predictions
-	- binary classification: `-ylog(p) + (1-y)log(1-p)`
-	-  multi-class classification: average cross entropy across all examples
+
 ## Optimizers
 - updates weights and biases to reduce the error
 - gradient descent
@@ -115,6 +94,7 @@ What is transfer learning?
 	- measure the performance of the model
 	- compare different models against each other in an unbiased way, by basing your comparisons in data that were not use in any part of your training/hyperparameter selection process. 
 	- You cannot compare based on the validation set, because that validation set was part of the fitting of your model. You used it to select the hyperparameter values!
+	- unseen data
 - `from sklearn.model_selection import train_test_split`
 
 ## cross validation
@@ -164,28 +144,8 @@ What is transfer learning?
 			- or data inconsistent
 				\- 
 # Learning Theory
-## Bias & Variance
-- bias and variance are 2 different sources of error in an estimator
-- Indeed, to be able to “solve” a problem, we want our model to have enough degrees of freedom to resolve the underlying complexity of the data we are working with, but we also want it to have not too much degrees of freedom to avoid high variance and be more robust. This is the well known **bias-variance tradeoff**.
-- ![img][image-3]
-- ![img][image-4]
-- bias
-	- expected deviation from the true value of the parameter/function
-	- bias(theta^) = E(theta^) - theta
-	- erroneous or simplistic assumption
-	- underfitting 
-	- bad accuracy
-- variance
-	- how much the estimates will vary as we independently re-sample the dataset from the underlying data generating process
-	- standard error = sqrt(var(theta^))
-	- too complicated
-	- sensitive 
-	- noise
-	- overfitting
-	- don't generalize well
-	- too much degree of freedom?
-- What is the bias-variance trade-off theorem?
-- From the bias-variance trade-off, can you derive the bound on training set size?
+
+
 # Model and Feature Selection
 Why are model selection methods needed?
 How do you do a trade-off between bias and variance?
@@ -248,11 +208,11 @@ What is standard error?
 - sigmoid function: 1 / (1 + e^-z)
 	- (-∞,+∞) -\> (0, 1)
 	- predictions -\> probabilities
-	- ![img][image-5]
+	- ![img][image-3]
 - Loss function
 	- can't use MSE because with sigmoid, MSE results in a non-convex function with many local minimums
 	- cross entropy loss
-		- ![loss function][image-6]
+		- ![loss function][image-4]
 		- The key thing to note is the cost function penalizes confident and wrong predictions more than it rewards confident and right predictions! The corollary is increasing prediction accuracy (closer to 0 or 1) has diminishing returns on reducing cost due to the logistic nature of our cost function.
 		- ![\_images/y1andy2\_logistic\_function.png](/Users/Tina/Google Drive/ML-Interview/assets/y1andy2\_logistic\_function.png)
 	- Cost Function
@@ -273,15 +233,14 @@ What is standard error?
 ### decision tree
 - criteria
 	- gini
-		- information gain
-		- entropy
-	- regularization
-	- pruning
-		- remove branches that have weak predictive power
-		- to reduce model complexity and predictive accuracy
-		- bottom-up or top-down
-		- reduced error pruning
-		- cost complexity pruning
+	- information gain
+	- entropy
+- regularization -\> pruning
+	- remove branches that have weak predictive power
+	- to reduce model complexity and predictive accuracy
+	- bottom-up or top-down
+	- reduced error pruning: Starting at the leaves, each node is replaced with its most popular class. If the prediction accuracy is not affected then the change is kept. While somewhat naive, reduced error pruning has the advantage of simplicity and speed.
+	- cost complexity pruning: [https://en.wikipedia.org/wiki/Decision\_tree\_pruning][1]
 ### SVM - Support Vector Machine
 - Produces *nonlinear* boundaries by constructing a linear boundary in a large, transformed version of the feature space
 - Maximum margin classifier
@@ -301,7 +260,7 @@ What is standard error?
 			- the larger the valuee, the more violations of the hyperplane are permitted
 		- Trade off between margin’s size and #misclassifications in training set
 	- Regularization `C`
-		- ![][image-7]
+		- ![][image-5]
 		- larger -\> smaller margin, less regularization, less misclassification, more overfitting, bias
 		- smaller -\> larger margin, more regularization, more misclassification, less overfitting, variance, smooth decision surface
 		- C = 1/lambda, where lambda is the regularization parameter
@@ -316,7 +275,7 @@ What is standard error?
 - kernel trick
 	- $K(x\_i, x\_j) = \varphi(x\_i)^T \varphi(x\_j)$
 	- example
-		- ![][image-8]
+		- ![][image-6]
 	- benefit
 		- Working directly in the feature space can be costly
 		- We have to explicitly create the feature space and operate in it
@@ -380,29 +339,29 @@ Logistic regression vs. SVMs: When to use which one?
 		- posterior = likelihood \* class prior / predictor prior
 ### KNN
 - classifies new cases by a majority vote of its k neighbors
-	- lazy learner
-		- does not have any learning involved, i.e., there are no parameters we can tune to make the performance better. Or we are not trying to optimize an objective function from the training data set.
-		- all computation is deferred until classification
-		- non-parametric method used for classification and regression
-	- Steps
-		- initialize K to your chosen number of neighbors
-		- for each example in the data
-			- compute distance between the query example and the current example from the data
-			- add the distance and the index of the example to an ordered collection
-		- sort the ordered collection of distances from smallest to largest (ascending)
-		- pick the first k entries, get the labels/values of the k entries
-		- or assign weight to the contributions of all the neighbors, so that the nearer neighbors contribute more to the average than the more distant ones. For example, a common weighting scheme consists in giving each neighbor a weight of 1/*d*, where *d* is the distance to the neighbor.
-		- if regression, return the mean; if classification return the most popular vote
-	- distance function
-		- continuous
-			- Euclidean
-			- Manhattan
-			- Minkowski
-		- categorical
-			- Hamming
-		- requires normalization
-	- Cons
-		- expensive O(N^2)
+- lazy learner
+	- does not have any learning involved, i.e., there are no parameters we can tune to make the performance better. Or we are not trying to optimize an objective function from the training data set.
+	- all computation is deferred until classification
+	- non-parametric method used for classification and regression
+- Steps
+	- initialize K to your chosen number of neighbors
+	- for each example in the data
+		- compute distance between the query example and the current example from the data
+		- add the distance and the index of the example to an ordered collection
+	- sort the ordered collection of distances from smallest to largest (ascending)
+	- pick the first k entries, get the labels/values of the k entries
+	- or assign weight to the contributions of all the neighbors, so that the nearer neighbors contribute more to the average than the more distant ones. For example, a common weighting scheme consists in giving each neighbor a weight of 1/*d*, where *d* is the distance to the neighbor.
+	- if regression, return the mean; if classification return the most popular vote
+- distance function
+	- continuous
+		- Euclidean
+		- Manhattan
+		- Minkowski
+	- categorical
+		- Hamming
+	- requires normalization
+- Cons
+	- expensive O(N^2)
 ### Random Forest
 - bagging method where deep tree, fitted on bootstrap samples, are combined to produce an output with lower variance. 
 - classification & regression
@@ -443,42 +402,44 @@ Describe the EM algorithm intuitively.
 What are the two steps of the EM algorithm
 Compare Gaussian Mixture Model and Gaussian Discriminant Analysis.
 
-- K-means
-	- *k*-means clustering aims to partition *n* observations into *k* clusters in which each observation belongs to the cluster with the nearest mean, serving as a prototype of the cluster. 
-		- Steps
-			- select k
-				-  the number of centroids you need in the dataset
-				- Choose k with the elbow method
-					- run k-means clustering on the dataset for a range of values of *k* (say, *k* from 1 to 10 in the examples above), and for each value of *k* calculate the sum of squared errors (SSE). 
-					- Then, plot a line chart of the SSE for each value of *k*. If the line chart looks like an arm, then the "elbow"/bend on the arm is the value of *k* that is the best.
-					- The idea is that we want a small SSE, but that the SSE tends to decrease toward 0 as we increase *k* (the SSE is 0 when *k* is equal to the number of data points in the dataset, because then each data point is its own cluster, and there is no error between it and the center of its cluster). So our goal is to choose a small value of *k* that still has a low SSE, and the elbow usually represents where we start to have diminishing returns by increasing *k*.
-					- ![Image result for elbow method][image-9]
-					- However, the elbow method doesn't always work well; especially if the data is not very clustered. does not have a clear elbow. Instead, we see a fairly smooth curve, and it's unclear what is the best value of *k* to choose. 
-			- Initialize center points
-				- Forgy method: randomly choose k observations as centroids
-				- Random Partition method: randomly assign a cluster to each observation and then proceed to the update step, thus computing the initial mean to be the centroid of the cluster's randomly assigned points
-				- The Forgy method tends to spread the initial means out, while Random Partition places all of them close to the center of the data set. 
-			- Assignment 
-				- Assign each observation to the cluster whose mean has the least squared Euclidean distance, this is intuitively the "nearest" mean.
-				- J (cost) decrease, holding centroids constant
-			- Update 
-				- Calculate the new means (centroids) of the observations in the new clusters.
-				- J (cost) decrease, holding cluster assignment constant
-			- Iterate
-				- Repeat these steps for a set number of iterations or when the assignments no longer change. 
-				- The algorithm does not guarantee to find the optimum
-				- The result may depend on the initial clusters. -\> randomly initialize the group centers a few times, and then select the run that looks like it provided the best results.
-		- Optimize
-			- total intra-cluster variation / total within cluster sum of square
-			- distortion cost function
-			- Every data point is allocated to each of the clusters through reducing the in-cluster sum of squares.
-			- In other words, the K-means algorithm identifies *k* number of centroids, and then allocates every data point to the nearest cluster, while keeping the centroids as small as possible.
-		- Pros
-			- Fast training O(N)
-		- Cons
-			- difficult to choose k
-			- lack consistency: K-means starts with a random choice of cluster centers and therefore it may yield different clustering results on different runs of the algorithm
-			- However, its performance is usually not as competitive as those of the other sophisticated clustering techniques because slight variations in the data could lead to high variance.
+K-means++
+
+## K-means
+- *k*-means clustering aims to partition *n* observations into *k* clusters in which each observation belongs to the cluster with the nearest mean, serving as a prototype of the cluster. 
+- Steps
+	- select k
+		-  the number of centroids you need in the dataset
+		- Choose k with the elbow method
+			- run k-means clustering on the dataset for a range of values of *k* (say, *k* from 1 to 10 in the examples above), and for each value of *k* calculate the sum of squared errors (SSE). 
+			- Then, plot a line chart of the SSE for each value of *k*. If the line chart looks like an arm, then the "elbow"/bend on the arm is the value of *k* that is the best.
+			- The idea is that we want a small SSE, but that the SSE tends to decrease toward 0 as we increase *k* (the SSE is 0 when *k* is equal to the number of data points in the dataset, because then each data point is its own cluster, and there is no error between it and the center of its cluster). So our goal is to choose a small value of *k* that still has a low SSE, and the elbow usually represents where we start to have diminishing returns by increasing *k*.
+			- ![Image result for elbow method][image-7]
+			- However, the elbow method doesn't always work well; especially if the data is not very clustered. does not have a clear elbow. Instead, we see a fairly smooth curve, and it's unclear what is the best value of *k* to choose. 
+	- Initialize center points
+		- Forgy method: randomly choose k observations as centroids
+		- Random Partition method: randomly assign a cluster to each observation and then proceed to the update step, thus computing the initial mean to be the centroid of the cluster's randomly assigned points
+		- The Forgy method tends to spread the initial means out, while Random Partition places all of them close to the center of the data set. 
+	- Assignment 
+		- Assign each observation to the cluster whose mean has the least squared Euclidean distance, this is intuitively the "nearest" mean.
+		- J (cost) decrease, holding centroids constant
+	- Update 
+		- Calculate the new means (centroids) of the observations in the new clusters.
+		- J (cost) decrease, holding cluster assignment constant
+	- Iterate
+		- Repeat these steps for a set number of iterations or when the assignments no longer change. 
+		- The algorithm does not guarantee to find the optimum
+		- The result may depend on the initial clusters. -\> randomly initialize the group centers a few times, and then select the run that looks like it provided the best results.
+- Optimize
+	- total intra-cluster variation / total within cluster sum of square
+	- distortion cost function
+	- Every data point is allocated to each of the clusters through reducing the in-cluster sum of squares.
+	- In other words, the K-means algorithm identifies *k* number of centroids, and then allocates every data point to the nearest cluster, while keeping the centroids as small as possible.
+- Pros
+	- Fast training O(N)
+- Cons
+	- difficult to choose k
+	- lack consistency: K-means starts with a random choice of cluster centers and therefore it may yield different clustering results on different runs of the algorithm
+	- However, its performance is usually not as competitive as those of the other sophisticated clustering techniques because slight variations in the data could lead to high variance.
 	- Mean-Shift Clustering
 		- Mean shift clustering is a sliding-window-based algorithm that attempts to find dense areas of data points. It is a centroid-based algorithm meaning that the goal is to locate the center points of each group/class, which works by updating candidates for center points to be the mean of the points within the sliding-window. These candidate windows are then filtered in a post-processing stage to eliminate near-duplicates, forming the final set of center points and their corresponding groups. 
 		- Mean shift is a hill climbing algorithm which involves shifting this kernel iteratively to a higher density region on each step until convergence.
@@ -492,7 +453,7 @@ Compare Gaussian Mixture Model and Gaussian Discriminant Analysis.
 			- no need to select k
 		- Cons
 			- the selection of the window size/radius “r” can be non-trivial.
-	- There are 3 more to read about [here][1]
+	- There are 3 more to read about [here][2]
 - Frequent Itemset Mining
 	- Apiori
 ### Dimensionality Reduction
@@ -516,11 +477,11 @@ What are the two pre-processing steps that should be applied before doing PCA?
 					- The aim of this step is to standardize the range of the continuous initial variables so that each one of them contributes equally to the analysis.
 					- More specifically, the reason why it is critical to perform standardization prior to PCA, is that the latter is quite sensitive regarding the variances of the initial variables. That is, if there are large differences between the ranges of initial variables, those variables with larger ranges will dominate over those with small ranges, which will lead to biased results.
 					- Mathematically, this can be done by subtracting the mean and dividing by the standard deviation for each value of each variable.
-						![img][image-10]
+						![img][image-8]
 				- Compute the covariance matrix: `Z^T*Z`
 					- The aim of this step is to understand how the variables of the input data set are varying from the mean with respect to each other, or in other words, to see if there is any relationship between them. 
 					- variables are highly correlated in such a way that they contain redundant information. 
-						![img][image-11]
+						![img][image-9]
 				- Calculate the eigenvectors and their corresponding eigenvalues of the covariance matrix
 					- decompose **Z**ᵀ**Z** into **PDP**⁻¹
 					- where **P** is the matrix of eigenvectors and **D** is the diagonal matrix with eigenvalues on the diagonal and values of zero everywhere else.
@@ -576,16 +537,14 @@ How to automatically caption an image?
 - tokenization
 
 ### Time Series
-
 - cross-validation
 	- validation set needs to come chronologically after the training subset
 	- forward chaining
 		- multiple train test sets
 		- test sets only have 1 observation
 		- corresponding training set consists of all the observations that occurred prior to the test observation (no future observation)
-		- ![Image result for time series cross validation][image-12]
+		- ![Image result for time series cross validation][image-10]
 		- The forecast accuracy is computed by averaging over the test sets
-		\- 
 
 ### Ensemble
 
@@ -604,7 +563,7 @@ How to automatically caption an image?
 		- A key insight for ensembling predictors is that by averaging (or generally aggregating) many low bias, high variance predictors, we can reduce the variance while retaining the low bias. 
 		- Each estimate is centered around the true density, but is overly complicated (low bias, high variance). By averaging them out, we get a smoothed version of them (low variance), still centered around the true density (low bias).
 		- In order to get a good reduction in variance, we require that the models being aggregated be uncorrelated, so that they make “different errors”
-		- ![img][image-13]
+		- ![img][image-11]
 	- can be parallelized
 
 - boosting
@@ -615,7 +574,7 @@ How to automatically caption an image?
 	- adaboost
 		- Adaptive boosting updates the weights attached to each of the training dataset observations 
 		- define our ensemble model as a weighted sum of L weak learners
-		- ![img][image-14]
+		- ![img][image-12]
 	- gradient boosting
 		- gradient boosting updates the value of these observations.
 
@@ -649,6 +608,7 @@ How to automatically caption an image?
 - TP: type I error
 - FN: type II error
 - t-test in the context of machine learning
+- 
 ## Neural Networks
 State the universal approximation theorem? What is the technique used to prove that?
 What is a Borel measurable function?
@@ -726,66 +686,13 @@ Why might unsupervised pretraining act as a regularizer?
 What is the disadvantage of unsupervised pretraining compared to other forms of unsupervised learning?
 How do you control the regularizing effect of unsupervised pretraining?
 How to select the hyperparameters of each stage of GLUP?
+
 ## Monte Carlo Methods
 What are deterministic algorithms?
 What are Las vegas algorithms?
 What are deterministic approximate algorithms?
 What are Monte Carlo algorithms?
 
-## Challenges
-
-### Overfitting & Regularization
-- What is overfitting?
-	- the model accurately remembers all training data, including noise and unrelated features -\> training data too small
-	- failed to learn any meaningful pattern into it
-	- Such a model often performs badly on new test or real data that have not been seen before. 
-- What is regularization? 
-	- A theoretical justification for regularization is that it attempts to impose Occam's razor on the solution (as depicted in the figure above, where the green function, the simpler one, may be preferred). From a Bayesian point of view, many regularization techniques correspond to imposing certain prior distributions on model parameters.
-	- Ian Goodfellow: any modification we make to the learning algorithm that is intended to reduce the generalization error, but not its training error
-- Intuitively, what does regularization do during the optimization procedure?
-	- discourages complex or extreme models, ignore the background noise
-	- improve generalizability of a learned model
-- ![][image-15]
-- $\lambda$
-	- tuned with cross validation
-- Lasso (L1)
-	- Least Absolute Deviations: sum of absolute values of weights
-	- more binary/sparse: a dumber model (simpler pattern)
-		- sparse means the majority of components are zeros
-		- built-in feature selection
-		- the shape formed by all points whose L1 norm equals to the same constant `c` has many corners/tips/spikes that happen to be sparse (lays o one of the axises of the coordinate)
-		- and if you grow this shape to touch the solution we find for our problem (a surface or a cross-section), the probability that the touch point of the 2 shapes is at one of the corners is very high
-		- $L_p$ norm is more sharp when $0<p<1$ but it’s computationally challenging
-		- ![][image-16]
-		- Explanations: The $\hat{\beta}$ is the unconstrained least squares estimate. The red ellipses are the contours of the least squares error function, in terms of parameters $\beta\_1$ and $\beta\_2$. Without constraints, the error function is minimized at the MLE$\hat{\beta}$ , and its value increases as the red ellipses out expand. The diamond and disk regions are feasible regions for lasso regression and ridge regression respectively. Heuristically, for each method, we are looking for the intersection of the red ellipses and the blue region as the objective is to minimize the error function while maintaining the feasibility.
-		- That being said, it is clear to see that the L1 constraint, which corresponds to the diamond feasible region, is more likely to produce an intersection that has one component of the solution is zero (i.e., the sparse model) due to the geometric properties of ellipses, disks, and diamonds. It is simply because diamonds have corners (of which one component is zero) that are easier to intersect with the ellipses that extending diagonally.
-		- A sensible sparsity constraint is the $L\_0$ norm, defined as the number of non-zero elements in `w`. Solving a $L\_0$  regularized learning problem, however, has been demonstrated to be NP-hard.
-	- corresponds to setting a Laplacean prior on the terms
-	- computationally inefficient on non-sparse cases
-- Ridge (L2)
-	- sum of squared weights
-	- spread error among all the terms
-	- corresponds to a Gaussian prior
-	- computationally efficient due to having analytical solutions
-- Elastic-net 
-	- a mix of both L1 and L2 regularizations. 
-	- A penalty is applied to the sum of the absolute values and to the sum of the squared values. 
-- deep learning
-	- dropout
-		- What is dropout? 
-		- removing some random neural connections while training and adding them back during backpropagagtion?
-		- How will you implement dropout during forward and backward pass?
-	- batch normalization
-- tree
-	- pruning
-- L1-loss vs. L2-loss and L1-regularization vs. L2-regularization
-	- use L1-norm or L2-norm either as a loss function or a regularization term
-	- L1 loss: Least Absolute Deviations (LAD), Least Absolute Errors (LAE)
-		- ![][image-17]
-	- L2 loss: Least Square Errors (LSE)
-		- ![][image-18]
-	- L1 regularization: sum of absolute weights
-	- L2 regularization: sum of squared weights
 ### Feature Selection
 
 - some mindset
@@ -834,8 +741,8 @@ What are Monte Carlo algorithms?
 		- imposes an additional cost on the model for making classification mistakes on the minority class during training
 		\- 
 - Resource
-	- [8 Tactics to Combat Imbalanced Classes in Your Machine Learning Dataset][2]
-	- [Python imbalanced-learn][3]
+	- [8 Tactics to Combat Imbalanced Classes in Your Machine Learning Dataset][3]
+	- [Python imbalanced-learn][4]
 
 ### Missing data
 
@@ -879,25 +786,20 @@ What is empirical risk minimization? Why the term empirical? Why do we rarely us
 Name some typical loss functions used for regression. Compare and contrast.
 What is the 0–1 loss function? Why can’t the 0–1 loss function or classification error be used as a loss function for optimizing a deep neural network?  (Non-convex, gradient is either 0 or undefined. https://davidrosenberg.github.io/ml2015/docs/3a.loss-functions.pdf)
 
-[1]:	https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-need-to-know-a36d136ef68
-[2]:	https://machinelearningmastery.com/tactics-to-combat-imbalanced-classes-in-your-machine-learning-dataset/
-[3]:	https://github.com/scikit-learn-contrib/imbalanced-learn
+[1]:	https://en.wikipedia.org/wiki/Decision_tree_pruning
+[2]:	https://towardsdatascience.com/the-5-clustering-algorithms-data-scientists-need-to-know-a36d136ef68
+[3]:	https://machinelearningmastery.com/tactics-to-combat-imbalanced-classes-in-your-machine-learning-dataset/
+[4]:	https://github.com/scikit-learn-contrib/imbalanced-learn
 
 [image-1]:	https://miro.medium.com/max/1052/1*55TfJMq5AkMKDg9VUa7ktA.jpeg
 [image-2]:	https://miro.medium.com/max/2892/1*J2B_bcbd1-s1kpWOu_FZrg.png
-[image-3]:	https://qph.fs.quoracdn.net/main-qimg-1ba4d8530cebe49e02aa9a91dac01134
-[image-4]:	https://qph.fs.quoracdn.net/main-qimg-71b3796db24e49984cf8fe6d85fbbe13
-[image-5]:	https://cdn-images-1.medium.com/max/1600/1*RqXFpiNGwdiKBWyLJc_E7g.png
-[image-6]:	https://ml-cheatsheet.readthedocs.io/en/latest/_images/ng_cost_function_logistic.png
-[image-7]:	https://ibb.co/WV4kvNc
-[image-8]:	https://ibb.co/RTsXw5N
-[image-9]:	https://www.datanovia.com/en/wp-content/uploads/dn-tutorials/004-cluster-validation/figures/015-determining-the-optimal-number-of-clusters-k-means-optimal-clusters-wss-silhouette-1.png
-[image-10]:	https://cdn-images-1.medium.com/max/1600/0*AgmY9auxftS9BI73.png
-[image-11]:	https://cdn-images-1.medium.com/max/1600/0*xTLQtW2XQY6P3mZf.png
-[image-12]:	https://robjhyndman.com/files/cv1-1.png
-[image-13]:	https://qph.fs.quoracdn.net/main-qimg-55c44d63831742ddd387541a428fcedf
-[image-14]:	https://cdn-images-1.medium.com/max/1600/1*7wz2AIdH0pZSIUAxveLlIg@2x.png
-[image-15]:	https://www.google.com/url?sa=i&source=images&cd=&ved=2ahUKEwinoeSv8vvkAhVRLKwKHWzSAW0QjRx6BAgBEAQ&url=https%3A%2F%2Ftowardsdatascience.com%2Fonly-numpy-implementing-different-combination-of-l1-norm-l2-norm-l1-regularization-and-14b01a9773b&psig=AOvVaw1paWrkCrfTGzqxSclj9xil&ust=1570047886823371
-[image-16]:	https://i.stack.imgur.com/oVJDB.png
-[image-17]:	http://www.chioka.in/wp-content/uploads/2013/12/l1-norm-formula.png
-[image-18]:	http://www.chioka.in/wp-content/uploads/2013/12/l2-norm-formula.png
+[image-3]:	https://cdn-images-1.medium.com/max/1600/1*RqXFpiNGwdiKBWyLJc_E7g.png
+[image-4]:	https://ml-cheatsheet.readthedocs.io/en/latest/_images/ng_cost_function_logistic.png
+[image-5]:	https://ibb.co/WV4kvNc
+[image-6]:	https://ibb.co/RTsXw5N
+[image-7]:	https://www.datanovia.com/en/wp-content/uploads/dn-tutorials/004-cluster-validation/figures/015-determining-the-optimal-number-of-clusters-k-means-optimal-clusters-wss-silhouette-1.png
+[image-8]:	https://cdn-images-1.medium.com/max/1600/0*AgmY9auxftS9BI73.png
+[image-9]:	https://cdn-images-1.medium.com/max/1600/0*xTLQtW2XQY6P3mZf.png
+[image-10]:	https://robjhyndman.com/files/cv1-1.png
+[image-11]:	https://qph.fs.quoracdn.net/main-qimg-55c44d63831742ddd387541a428fcedf
+[image-12]:	https://cdn-images-1.medium.com/max/1600/1*7wz2AIdH0pZSIUAxveLlIg@2x.png
