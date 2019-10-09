@@ -35,7 +35,7 @@
 |  Name  | model fit    | consequence   |  reason  |
 | --- | --- | --- | --- |
 |  bias  | underfitting   |  bad accuracy  | erroneous/simplistic assumption   |
-|  variance  |  overfitting  | don’t generalize  |  too complicated, learned noise  |
+|  variance  |  overfitting  | sensitive, don’t generalize  |  too complicated, learned noise  |
 
 ## What is Regularization?
 - A theoretical justification for regularization is that it attempts to impose Occam's razor on the solution (as depicted in the figure above, where the green function, the simpler one, may be preferred). 

@@ -1,0 +1,480 @@
+# AWS Developer Associate Notes
+
+## Exam Details
+
+- Exam Domains 
+    - 22% Deployment (CI/CD, Beanstalk, prepare deployment package, serverless)
+    - 26% Security (make authenticated calls, encryption, application authentication and authorization)
+    - 30% Developing with AWS Services (code serverless, functional requirements -> application design, application design -> code, interact with AWS via APIs, SDKs, AWS CLI)
+    - 10% Refactoring (optimize application to best use AWS)
+    - 12% Monitoring and Troubleshooting (write code that can be monitored, root cause analysis on faults)
+- Exam Format
+    - Multiple choice or multiple response questions
+    - 130 min in length, 65 questions
+    - scenario based questions
+    - Score 100 - 1000, passmark is 720
+    - $150
+    - certification valid for 2 years
+
++++
+
+## 1. IAM
+
+- Always use roles, never use secret or access keys
+- Manage users and their level of access to AWS
+- capabilities
+    - centralized control: universal, doesn't apply to region
+    - shared access to your AWS account
+    - granular permissions
+    - Identity Federation
+        - Active Directory: log in with Windows login password
+        - Facebook / LinkedIn / ... 
+        - Using SAML (Security Assertion Markup Language 2.0), you can give your federated users single sign-on (SSO) access to the AWS Management Console.
+    - Multifactor authentication
+        - multiple independent authentication mechanisms
+    - provide temporary access for users/devices and services
+    - set up password rotation policy
+    - integrates with many different AWS services
+    - supports PCI DSS compliance 
+- Key terminology
+  - *users*: end users
+      - root account
+          - account created when first setup AWS account
+          - full admin access
+          - always setup Multifactor authentication on root account
+          - shouldn't be using day-to-day
+      - new users have NO permissions when created (least privilege)
+      - new users are assigned access key ID and secret access keys when created
+      - programmatic access (CLI)
+          - access key ID
+          - secret access key (only visible once after creation)
+      - console access (browser)
+          - password
+  - *groups*
+      - a collection of users
+      - under one set of permissions
+      - An IAM group is used to collectively manage users who need the same set of permissions. By having groups, it becomes easier to manage permissions. So if you change the permissions on the group scale, it will affect all the users in that group. 
+  - *policies*
+      - a JSON document that defines permissions
+      ```
+      {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Effect": "Allow",
+                  "Action": "*",
+                  "Resource": "*"
+              }
+          ]
+      }
+      ``` 
+      - give permissions as to what a user/role/group can do
+  - *roles*
+      - create roles and assign them to AWS resources 
+      - grant permissions to entities
+          - IAM user
+          - application code
+          - AWS service
+          - users with identity federation
+      - a set of defined access
+          - e.g. EC2 write to S3
+          - e.g. EC2 query DynamoDB
+      - You can easily add tags which define which instances are production and which are development instances and then ensure these tags are used when controlling access via an IAM policy.
+  - 
+
+Advanced IAM
+
++++
+
+## 2. EC2
+
+### 2.1 EC2 101
+
+- Elastic Compute Cloud
+- resizable compute capacity (virtual machines) in the cloud
+- Instance purchasing options
+    - *on-demand*
+        - fixed rate, low cost, flexibility 
+            - no up-front payment
+            - no long-term commitment
+        - applications with short term, spiky, unpredictable workloads
+        - Linux: by the second 
+        - Windows by the hour
+    - *reserved instances*
+        - contract 1 year / 3 years
+        - upfront charge with discounted hourly price
+            - standard RI: up to 75% off on-demand
+            - convertible RI: up to 54% off on-demand, have capacity to change your instance types
+            - scheduled RI: launch within the time window you reserved
+        - applications with steady state or predictable usage
+        - can't change region
+    - *spot*
+        - bid price
+        - if your application have flexible start and end times
+        - applications only feasible at very low compute prices
+            - genomics, pharmaceutical, chemical companies
+        - if your spot instance is terminated by AWS, you won't be charged for a partial hour of usage
+        - if you terminate the instance yourself you will be charged for the complete hour
+        - pay for what you bid on
+    - *dedicated hosts*
+        - physical EC2 servers dedicated for your use
+        - useful for regulatory requirements or licenses that may not support multi-tenant virtualization or cloud deployments
+        - can be purchased on-demand or as a reservation
+- Instance Types - FIGHT DR MC PX
+
+| Family | Speciality | Use Case | Memorize | 
+| --- | ------- | ------- | 
+| F1 | field programmable gate array | Genomics research, financial analytics, realtime video processing, big data |  | 
+| I3 | high speed storage | NoSQL DBs, data warehousing | IOPS | 
+| G3 | graphics intensive | video encoding/3D application streaming | graphics | 
+| H1 | high disk throughput | MapReduce, distributed file systems (HDFS, MapR-FS) | high | 
+| T2 | lowest cost, general purpose | web servers, small DBs | | 
+| D2 | dense storage | fileservers, data warehousing, Hadoop | density | 
+| R4 | memory optimized | memory intensive apps/DBs | RAM | 
+| M5 | general purpose | applications servers | main choice | 
+| C5 | compute optimized | CPU intensive apps/DBs | compute | 
+| P3 | graphics/general purpose GPU | ML, bitcoin mining | pics | 
+| X1 | memory optimized | SAP HANA/Apache Spark | extreme memory | 
+
+![](https://i.ibb.co/rcS12vS/Screen-Shot-2019-10-07-at-3-21-14-PM.png)
+
+- created from Amazon Machine Image (AMI)
+    - marketplace & community has pre-built AMI for purchase
+- key pair
+    - to login to your EC2
+    - `chmod 400 key.pem` 
+    - save in ~/.ssh
+    - `ssh ec2-user@public_ip -i key.pem` 
+-  to using the instance as a web server
+    - `sudo su` to gain root access
+    - `yum update -y` update the OS and relevant packages
+    - `yum install httpd -y` to install Apache
+    - `service httpd start` to start the server
+    - `chkconfig httpd on` to turn Apache on automatically if instance restarts
+    - `service httpd status` to check if Apache is running
+    - `cd /var/www/html` go to root directory for web server
+    - `vim index.html` to add content in webpage 
+    - `<html><body><h1>Hello</h1></body></html>`
+    - go to web browser with the public ip, you should see the content you put
+- 1 subnet == 1 availability zone
+- Bootstrap Script
+    - automating software installs and updates
+- to get information about an instance 
+    - `curl https://169.254.169.254/latest/meta-data/`
+    - `curl https://169.254.169.254/latest/user-data/` bootstrap scripts
+- Termination protection
+    - prevent your instance from being accidentally terminated from the console, CLI, or API. 
+    - disabled by default
+    - The DisableApiTermination attribute does not prevent you from terminating an instance by initiating shutdown from the instance (using an operating system command for system shutdown) when the InstanceInitiatedShutdownBehavior attribute is set.
+
+### 3.2 Security Group
+
+- Updated rule take effect immediately
+- Inbound
+  - everything blocked by default
+  - white list
+    - allow rules only, no deny rules
+    - use Network Access Control Lists to block specific IP
+- Outbound
+  - all outbound traffic is allowed
+- Stateful
+  - If you create an inbound rule allowing traffic in, that traffic is automatically allowed back out again
+- EC2: Security Groups = m:m 
+
+### 3.3 Block Storage
+
+- With block storage, files are split into evenly sized blocks of data, each with its own address but with no additional information (metadata) to provide more context for what that block of data is.
+- Another key difference is that block storage can be directly accessed by the operating system as a mounted drive volume, while object storage cannot do so without significant degradation to performance. 
+- EC2 block storage
+  - EBS volume
+  - instance store volume
+
+### 3.4 EBS Volume
+
+- Elastic Block Storage
+- virtual hard disk drive
+    - attached to an EC2
+    - create a file system on it
+    - run a database on it
+    - automatically replicated to avoid failure
+- root device volume
+    - or boot volume
+    - where Linux/Windows is installed (like C://)
+- Types
+    - general purpose SSD (GP2)
+        - most work loads 
+        - balances price & performance
+        - 3 IOPS to 10,000 IOPS per GB
+    - provisioned IOPS SSD (IO1)
+        - high performance
+        - > 10,000 IOPS 
+        - I/O intensive application
+        - DB (relational or NoSQL)
+    - throughput optimized HDD (ST1)
+        - magnetic storage volumes
+        - frequent access, throughput intensive
+        - Big data, data warehouse, log processing
+        - can't be a boot volume (needs to be additional)
+    - cold HDD (SC1)
+        - less frequently accessed workloads, lowest cost
+        - file server
+        - can't be a boot volume
+    - EBS Magnetic (Standard)
+        - legacy generation HDD
+        - only magnetic volume that is bootable
+        - cheap, infrequent data access
+- volume size can be changed on the fly
+    - size 
+    - storage type
+- always same availability zone as the EC2 instance
+- Termination
+  - instance terminated
+    - root EBS volume 
+      - deleted by default
+      - can turn termination protection on
+    - additional ECS volumes persists
+- Encryption
+  - can't encrypt EBS root volume of default AMI
+    - create a snapshot of root volume
+    - create a copy of snapshot and select encrypt
+    - create an AMI from the encrypted copy
+    - use the AMI to launch a new instance
+  - can encrypt additional volume
+- Snapshot
+  - exist on S3
+  - time copies of the volumes
+  - Incremental
+  - can be taken when instance is running, but stop the instance first if the EBS serves as root device to ensure consistency
+  - Encryption 
+    - snapshots of encrypted volumes are encrypted automatically
+    - volumes restored from encrypted snapshots are encrypted automatically
+    - you can share snapshots, but only if they are unencrypted
+      - with other AWS accounts
+      - public, sell in marketplace
+  - can be used to move EC2 volume to another availability zone
+- to move EC2 to another AZ
+  - take a snapshot
+  - create an AMI from the snapshot
+  - use the AMI to launch a EC2 in a new AZ
+- to move EC2 to another region
+  - take a snapshot
+  - create an AMI from the snapshot
+  - copy AMI to another region
+  - use the AMI to launch a EC2 in the new region
+- Can create AMI (Amazon Machine Image) from EBS-backed instances and snapshots
+- EBS vs Instance Store
+  - instance store (ephemeral storage)
+    - The data in an instance store persists only during the lifetime of its associated instance
+    - can't be stopped, can reboot or terminate
+      - will lose data if stopped, or underlying disk drive fails or instance terminates
+      - won't lose data if reboot (intentionally or unintentionally)
+      - ROOT volumes will be deleted on termination
+    - You can attach additional instance store volumes to your instance. You can also attach additional EBS volumes after launching an instance, but not instance store volumes.
+    - the root device for an instance luanched from the AMI is a instance store created from a template stored in S3 (can take a little longer than EBS backed volumes)
+  - EBS backed volumes
+    - the root device for an instance luanched from the AMI is a EBS volume created from a EBS snapshot
+    - can be stopped and snapshotted
+    - won't lose data if stopped
+    - won't lose data if reboot
+    - by default, ROOT volumes will be deleted on termination, but can change setting to keep it
+
+### 3.4 CloudWatch
+
+- monitoring performance
+  - CloudTrail is about auditing API calls
+- AWS services and user applications
+- Interval
+  - every 5 minutes by default
+  - can have 1 minute interval if turn on detailed monitoring
+- Features
+  - Alarms
+  - Dashboards
+  - Events
+  - Logs
+- Cloud Watch vs Access Logs
+  - access logs: requests or connections, the time it was received, the client's IP address, latencies, request paths, and server responses
+
+3.5 Command Line
+
+- need to setup access in IAM
+- access key ID and secret access key
+
+3.6 EFS - Elastic File System
+
+- supports the Network File System version 4 (NSFv4) protocol
+- only pay for the storage you use, no pre-provisioning
+- can scale to TB
+- can support thousands of concurrent NFS connections
+  - can't share EBS with multiple EC2
+  - can create EFS mount
+- stored multi AZ within a region
+- read after write consistency
+
+3.7 Spread placement groups
+
+- EC2 attempts to place instances so that they spread out across underlying hardware to minimize correlated failures by default
+- Spread placement groups configures the placement of a group of instances
+- 2 types
+  - Cluster
+    - packs instances close together inside 1 AZ
+    - low-latency network performance
+    - high throughput
+    - tightly-coupled node-to-node communication that is typical of HPC applications
+  - spread placement group
+    - critical instances
+    - different hardware
+- unique namespace withint AWS account
+- can't merge placement groups
+- can't move existing instance to a placement group
+- maximum of 7 running instances per Availability Zone
+
+### Load Balancer
+
+- Balance load across web servers
+- Types of Load Balancers
+    - *Application load balancer*
+        - layer 7 (application layer): application aware
+        - intelligent, advanced request routing
+        - best suited for balancing HTTP and HTTPS traffic
+    - *Network load balancer*
+        - layer 4 - connection level
+        - TCP traffic
+        - extreme performance: millions of requests per second
+        - most expensive, usually used in production
+    - *classic load balancer* / *elastic load balancer*
+        - balancing HTTP/HTTPS applications use Layer 7-specific features, e.g. x-forwarded and sticky sessions
+            - Public IP -> load balancer -> private iP to server, the x-forwarded-for header contains the public IP (IPv4 address)
+        - also Layer 4 load balancing for applications that rely purely on the TCP protocol
+        - low cost
+        - legacy 
+- 504 Error
+    - gateway timed out
+    - application not responding
+    - -> trouble shoot the application
+        - web server / db
+        - scale it up or out if necessary
+
+
+## 5. Route53
+
+### 5.1 DNS 101
+
+- Naming
+  - The "route" part comes from the historic "Route 66" of the USA
+  - 53 is port 53 for TCP and UDP
+- DNS
+  - convert human friendly domain names -> Internet Protocol (IP) address
+  - IP addresses are used by computers to identify each other on the network
+  - IPv4 or IPv6 
+    - IPv4
+      - 32 bit field
+      - 4 billion addresses
+      - running out
+    - IPv6
+      - 128 bits
+      - 340 undecillion addresses
+- top level domains
+  - string of characters seperated by dots
+  - last word is top level domain
+    - .com
+    - .edu
+    - .gov 
+  - second level domain name
+    - .co.uk
+      - .uk is top level
+      - .co is second level domain
+  - Controlled by the Internet Assigned Numbers Authority (IANA)
+  - domain registrars
+    - assign domain names directly under 1 or more top-level domains
+    - Amazon
+    - GoDaddy.com
+    - 123-reg.co.uk etc.
+  - SOA record
+    - start of authority record
+  - NS record
+    - name server record
+    - used by top level domain servers to direct traffic to the content DNS server
+    - "acloudguru.com" -> .com server -> NS records -> SOA (DNS records)
+  - DNS record
+    - A record
+      - A = address
+      - domain name -> IP address
+    - TTL
+      - time to live
+      - length a DNS record is cached in the resolving server or user local PC
+      - lower TTL, faster changes to DNS records take to propagate throughout the internet
+    - CName
+      - Canonical Name
+      - resolve 1 domain name to another
+      - "m.acloudguru.com" -> "mobile.acloudguru.com" -> "IPv4"
+      - BATMAN -> "Bruce Wayne" -> 412-412-4121
+    - Alias Records
+      - map resource records to ELB, CloudFront, or S3 buckets websites
+      - DNS -> target name
+      - can't be used for naked domain name (without a www.)
+      - has to be an A record or an alias
+      - always choose an alias record over a CName in an exam scenario
+      - Provides a router53-specific extension to DNS functionality
+  - MX record
+  - PTR record
+    - reverse of an A Record
+    - address -> domain name
+  - ELBs don't have pre-defined IPv4 addresses, you resolve to them using a DNS name
+
+### 5.2 Route53
+
+- Domain Registration
+  - can buy domain names directly with AWS
+  - take up to 3 days to register
+- Create 3 EC2 in 3 regions
+  - N. Virginia 3.87.24.95 
+  - Seoul 54.180.113.112
+  - Paris 35.181.48.173
+- Routing policies
+  - simple routing
+    - 1 record with multiple IP address
+    - Route53 returns a random value
+    - hosted zones -> create record set -> naked name -> A record -> put 3 IPs for EC2 in
+    - access tinabu.com and the server will change
+    - can modify TTL
+  - weighted routing
+    - split traffic based on weights
+    - e.g. 20% Paris 80% N. Virginia
+  - latency-based routing 
+    - route your traffic based on the lowest network latency for your end user
+    - fastest response time
+  - failover routing
+    - create an active/passive set up
+    - e.g. primary site in EU-WEST-2 and secondary disaster recovery site in AP-SOUTHEAST-2
+    - failover to passive if active is down
+  - geolocation routing
+    - choose where your traffic will be sent based on the user's geographic locations
+    - continent / country based
+  - geoproximity routing
+    - let Route53 route traffic based on user geographic location and your resources
+    - must use Route53 traffic flow
+    - you can influence it with "bias"
+    - traffic policy tab
+  - multivalue answer routing
+    - like simple routing: configure Route53 to return multiple values 
+    - but plus health checks and return only healthy resources
+- Health check
+  - create on individual record sets
+  - Add health check to A record 
+  - if a record fails a health check, it will be removed from Route53 until it passes the health check again
+  - can set SNS notificatin for health check failures
+
+
+## 3. S3
+
+## 4. Serverless Computing
+
+## 5. DynamoDB
+
+## 6. KMS & Encryption
+
+## 7. Other AWS Services
+
+## 8. Developer Theory 
+
+## 9. Monitoring

@@ -258,7 +258,7 @@ What is standard error?
 		- the number of misclassifications / violations of the margin
 			- `ξi =0` is no violation and we are back to the inflexible Maximal-Margin Classifier 
 			- the larger the valuee, the more violations of the hyperplane are permitted
-		- Trade off between margin’s size and #misclassifications in training set
+		- Trade off between margin’s size and \#misclassifications in training set
 	- Regularization `C`
 		- ![][image-5]
 		- larger -\> smaller margin, less regularization, less misclassification, more overfitting, bias
@@ -458,7 +458,18 @@ K-means++
 	- Apiori
 ### Dimensionality Reduction
 - Why do we need dimensionality reduction techniques?
-What do we need PCA and what does it do?
+- What do we need PCA and what does it do?
+    - data compression
+    - visualization: k = 2 / 3
+- What can't PCA do?
+    - prevent overfitting: use regularization
+    - run it before training the algorithm, using the original dataset
+- Steps
+    - PCA on training set: $x_i \in \mathbb{R}^10000$ -> $z_i \in \mathbb{R}^1000$
+    - learn the model (faster)
+    - $h_\theta(z)=\frac{1}{1 + e^{-\theta^Tz}}$
+    - cross-validation/test set: $x$ -> $z$ -> $h_\theta(z)$
+
 What is the difference between logistic regression and PCA?
 What are the two pre-processing steps that should be applied before doing PCA?
 
