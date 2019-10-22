@@ -152,7 +152,26 @@ aws kms re-encrypt --destination-key-id YOURKEYIDHERE --ciphertext-blob fileb://
 aws kms enable-key-rotation --key-id YOURKEYIDHERE
 ```
 
-- web identity federation
+- Cognito - web identity federation
+    - AWS web identity federation services (identity broker)
+    - give user access with web-based identity provider like Amazon / Facebook / Google 
+    - User first authenticates with web ID provider -> authentication token
+    - exchange authentication token for AWS credentials -> IAM role
+        - sign up and sign in to your apps
+        - access for guest users
+        - synchronizes user data across devices
+            - push synchronization
+    - User pools
+        - user based 
+            - user registration
+            - authentication
+            - account recovery 
+            - sign up and sign in functionality (username, password)
+    - Identity pools
+        - provide temporary credentials and authorization to access AWS services
+
+  <img src ='app_cognito.png' width=500 align="left">
+  
 - Cognito user pools
 - STS
 - Cross Account Access
@@ -1742,15 +1761,78 @@ Except: 100-continue (S3 not send request body until receive an acknowledgement)
 
 ## 7 Other AWS Services
 
-### 7.1 SQS
+### 7.1 SQS - Simple Queue Service
 
-### 7.2 SNS
-\
+- Concept
+  - message queue that stores messages while waiting to be processed
+  - decouple infrastructure
+  - buffer between components
+- message
+  - default 256 KB of text
+  - up to 2GB (stored in S3 instead)
+  - persistence
+    - 1 min to 14 days
+    - default retention period 4 days
+  - visibility time out
+    - amount of time the message is invisible in the SQS after a reader picks up that msg
+    - deleted if message is processed after visibility timeout expires
+    - visible again if message is not processed so in case the first EC2 died, another one can pick it up after the time out
+    - may result in a message being delivered twice
+    - max 12 hours
+- pull based
+  - short polling: returns immediately
+  - long polling: doesn't return until a message arrives in the queue or the long poll times out
+- 2 types
+  - standard queue
+    - unlimited number of transactions per second
+    - at least once
+    - occasionally more than 1 copy of a message might be delivered out of order
+    - generally delivered in same order as they are sent
+  - FIFO queue
+    - FIFO: order strictly preserved
+    - exactly once: no duplicates
+    - 300 transactions per second (TPS)
+
+### 7.2 SNS - Simple Notification Service
+
+- concept
+  - push notifications (push based)
+  - multiple transport protocol
+    - mobile: Apple, Google, Fire OS, Windows devices, Android
+    - SMS text messages
+    - email to SQS queues
+    - HTTP endpoint 
+- group multiple recipient using topics
+  - topics: access point for subscribers
+  - 1 topic - M endpoint types
+- stored redundantly across multiple AZ
+
 SES vs SNS
 
 ### 7.3 Kinesis
 
+- accepts streaming data
+  - generated continuously 
+  - by thousands of data sources
+  - small sizes Kb
+- types
+  - Kinesis Streams
+    - store streaming data in shards
+    - persistent: 24 hours by default, up to 7 days
+  - Kinesis Firehose
+    - optional lambda function
+    - no data persistent
+    - output immediately (S3, Elastic Search Cluster)
+  - Kinesis Analytics
+    - analyze data in Streams/Firehose
+
 ### 7.4 ElasticBeanstalk
+
+- under Compute services
+- Easy application deployment with code upload and clicks 
+- Configures EC2 provisioning, load balancing, scaling, and health check
+- can configure auto scaling
+- good for web applications
 
 ### 7.5 Systems Manager Parameter Store
 
@@ -1834,6 +1916,92 @@ SES vs SNS
     - AppSpec File: defines the deployment actions you want AWS CodeDeploy to execute
     - Revision: everything needed to deploy the new version, AppSpec file, application files, executables, config files
     - Application: unique identifier for the application you want to deploy. Ensures the correct combination of revision, deployment configuration and deployment group are referenced during a deployment
+- AppSpec File
+    - defines the parameters that will be used for a CodeDeploy deployment
+    - file structure
+        - Lambda deployment: YAML/JSON
+            - version: reserved for future use, currently only allows 0.0
+            - resources: name and properties of the Lambda function
+            - hooks: specifies Lambda functions to run at set points in the deployment lifecycle to validate the deployment. e.g. validation tests to run before allowing traffic to be sent to your newly deployed instances
+                - BeforeAllowTraffic: specify the tasks or functions you want to run before traffic is routed to the newly deployed Lambda function e.g. test to validate the function has been deployed correctly
+                - AfterAllowTraffic: specify the tasks or functions you want to run after the traffic has been routed to the newly deployed Lambda function e.g. test to validate the function is accepting traffic correctly and behaving as expected
+            - example
+
+            ```yaml
+            version:0.0
+            resources:
+              - myLambdaFunctionName:
+                Type: AWS::Lambda::Function
+                Properties:
+                  Name: "myLambdaFunctionName"
+                  Alias: "mylambdaFunctionAlias"
+                  CurrentVersion: "1"
+                  TargetVersion: "2"
+            hooks: 
+              - BeforeAllowTraffic: "LambdaFunctionToValidateBeforeTrafficShift"
+              - AfterAllowTraffic: "LambdaFunctionToValidateAfterTrafficShift"
+            ```
+        
+        - EC2/on-premises: YAML
+            - version: reserved for future use, currently only allows 0.0
+            - os: the operating system version you are using
+            - files: the location of any application files that need to be copied and where they should be copied to
+            - hooks: lifecycle events allow you to specify scripts that need to run at set points in the deployment lifecycle 
+                - e.g. to unzip application files prior to deployment, run functional tests on the newly deployed application
+                - run order of hooks
+                - Deregister instance from load balancer
+                    - BeforeBlockTraffic: run tasks on instances before they are deregistered from a load balancer
+                    - BlockTraffic: deregister instances from a load balancer
+                    - AfterBlockTraffic: run tasks on instances after they are deregistered from a load balancer 
+                - Upgrade an application
+                    - ApplicationStop: gracefully stop the application in preparation for deploying the new revision
+                    - DownloadBundle: CodeDeploy agent copies application revision files to a temporary location
+                    - BeforeInstall: pre-installation scripts, e.g. backing up the current version, decrypting files
+                    - Install: CodeDeploy agent copies application revision files from temporary location to the correct location
+                    - AfterInstall: post-installation scripts, e.g. configuration tasks, change file permissions, add executable access to a file
+                    - ApplicationStart: restarts any services that were stopped during ApplicationStop
+                    - ValidateService: tests to validate the service
+                - Register instance to load balancer
+                    - BeforeAllowTraffic: run tasks on instances before they are registered from a load balancer
+                    - AllowTraffic: register instances with a load balancer
+                    - AfterAllowTraffic: run tasks on instances after they are registered from a load balancer
+    ADDPICTURE
+            - example 
+
+            ```yaml
+            version: 0.0
+            os: linux
+            files:
+              - source: Config/config.txt
+                destination: /webapps/Config
+              - source: Source
+                destination: /webapps/myApp
+            hooks:
+              BeforeInstall:
+                - location: Scripts/UnzipResourceBundle.sh
+                - location: Scripts/UnzipDataBundle.sh
+              AfterInstall:
+                - location: Scripts/RunResourceTests.sh
+                  timeout: 180
+              ApplicationStart:
+                - location: Scripts/RunFunctionTests.sh
+                  timeout: 3600
+              ValidateService:
+                - location: Scripts/MonitorService.sh
+                  timeout: 3600
+                  runas: codedeployuser
+            ```
+            
+            - `appspec.yml` must be placed in the root directory of your revision, otherwise the deployment will fail
+            - typical folder setup
+
+            ```
+            appspec.yml
+            /Scripts
+            /Config
+            /Source
+            ```
+
 - Lab: 
     - Create roles
         - Create a role for EC2 with `AmazonS3FullAccess` policy
@@ -1870,7 +2038,7 @@ SES vs SNS
         - **`appspec.yml`**
             - define all the parameters needed for a CodeDeploy deployment
 
-            ```yml
+            ```yaml
             version: 0.0
             os: linux
             files:
@@ -1930,7 +2098,99 @@ SES vs SNS
 
 - CI/CD workflow tool
 - model, visualize, and automate the entire release process
-    - build, test, deployment
+- orchestrate build, test, deployment every time there is a change to your code
+- all based on a user defined software release process
+- allows frequent releases in a reliable way
+- code update -> build -> test -> deploy
+- modeled with GUI or CLI
+- Integrates with
+    - CodeCommit, CodeBuild, CodeDeploy, Lambda, Elastic Beanstalk, CloudFormation, Elastic Container Service
+    - GitHub, Jenkins
+- every code pushed to your repo (CodeCommit/S3) automatically enters the workflow and triggers the set of actions (with a CloudWatch event trigger)
+- the pipeline automatically stops if one of the stages fails, changes will roll back
+- Lab Step 1: Create an EC2 with CloudFormation, upload code v1.0 to S3, deploy application to EC2 with CodeDeploy. 
+    - everything needs to be in same region 
+    - CloudFormation
+        - create a new S3 bucket
+        - save `CF_Template.json` to your bucket
+        - creates EC2 instance, tag it, and associate the key pair, set a security group, select instance regions 
+
+        ```shell
+        aws cloudformation create-stack --stack-name CodeDeployDemoStack \
+        --template-url http://s3-us-east-1.amazonaws.com/<bucket-name>/CF_Template.json \
+        --parameters ParameterKey=InstanceCount,ParameterValue=1 \
+        ParameterKey=InstanceType,ParameterValue=t2.micro \
+        ParameterKey=KeyPairName,ParameterValue=<pem-key-name> \
+        ParameterKey=OperatingSystem,ParameterValue=Linux \
+        ParameterKey=SSHLocation,ParameterValue=0.0.0.0/0 \
+        ParameterKey=TagKey,ParameterValue=Name \
+        ParameterKey=TagValue,ParameterValue=CodeDeployDemo \
+        --capabilities CAPABILITY_IAM
+        ```
+    - IAM 
+        - give your user permission to access CloudFormation
+        - add `AmazonS3FullAccess`, `AWSCodeDeployFullAccess` policy
+        - create this policy, and attach it to the user
+        
+        ```json
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": "cloudformation:*",
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": "iam:*",
+                    "Resource": "*"
+                },
+                {
+                    "Action": "ec2:*",
+                    "Effect": "Allow",
+                    "Resource": "*"
+                }
+            ]
+        }
+        ```
+
+    - Check we are good to go
+
+        ```shell
+        # Verify that the Cloud Formation stack has completed 
+        aws cloudformation describe-stacks --stack-name CodeDeployDemoStack --query "Stacks[0].StackStatus" --output text
+        
+        # Log in to your instance and check that the CodeDeploy agent has correctly installed
+        ssh -i key-name.pem ec2-user@public-ip
+        sudo service codedeploy-agent status
+        ```
+        
+    - S3
+        - create a bucket
+        - enable versioning
+        - upload v1.0 code `mywebapp.zip`
+            - need to be a compressed file
+    - CodeDeploy
+        - **Create application** -> select EC2 
+        - **Create deployment group** -> select the service role -> in-place -> **EC2 instances** for environment configuration -> put in the EC2 tags -> uncheck load balancer -> **Create deployment group** 
+        - **Create deployment** -> select the deployment group -> select S3 bucket as **Revision location** 
+        - check by opening the EC2 public-ip in browser
+- Lab Step 2: Build CodePipeline and manually trigger CodeDeploy to update to code v2.0. 
+    - S3
+        - upload v2.0 code `mywebapp.zip`
+    - CodePipeline
+        - create a pipeline
+        - **Source provider**: S3, put in bucket name, file name
+        - detection options: **CloudWatch Events**
+        - skip build stage
+        - **Deploy**: CodeDeploy
+    - check by opening the EC2 public-ip in browser
+- Lab Step 3: Finally configure automated pipeline, which triggers a new deployment when we upload v3.0 to our S3 bucket. 
+    - S3
+        - upload v3.0 code `mywebapp.zip`
+    - check by opening the EC2 public-ip in browser
 
 ### 8.5 Docker and CodeBuild
 
@@ -1938,6 +2198,16 @@ SES vs SNS
 
 ### 8.6 CloudFormation
 
+- a way to completely scripting your cloud environment
+- across all regions and accounts
+    - create a stack
+    - from sample template - WordPress blog
+    - a EC2 with wordpress and MySQL will be created
+- Quick Starts: a bunch of Cloud Formation templates built, allowing users to build complex environment quickly
+- Components
+    - Parameters
+    - Resources
+    - Outputs
 
 ### 8.7 Serverless Application Model (SAM)
 
