@@ -342,18 +342,15 @@
 
 ### 3.7 Spread placement groups
 
-- EC2 attempts to place instances so that they spread out across underlying hardware to minimize correlated failures by default
-- Spread placement groups configures the placement of a group of instances
-- 2 types
-  - Cluster
-    - packs instances close together inside 1 AZ
-    - low-latency network performance
-    - high throughput
-    - tightly-coupled node-to-node communication that is typical of HPC applications
-  - spread placement group
-    - critical instances
-    - different hardware
-- unique namespace withint AWS account
+- configures the placement of a group of instances
+
+    | type | cluster | spread placement group |
+    |:--|:--|:--|
+    | definition | packs instances close together inside 1 AZ | spread out across underlying hardware to minimize correlated failures by default |
+    | feature | low-latency network performance, high throughput |  |
+    | use case | tightly-coupled node-to-node communication that is typical of HPC applications | critical instances | 
+
+- unique namespace within AWS account
 - can't merge placement groups
 - can't move existing instance to a placement group
 - maximum of 7 running instances per Availability Zone
