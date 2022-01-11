@@ -63,6 +63,13 @@
 	- bottom-up or top-down
 	- reduced error pruning: Starting at the leaves, each node is replaced with its most popular class. If the prediction accuracy is not affected then the change is kept. While somewhat naive, reduced error pruning has the advantage of simplicity and speed.
 	- cost complexity pruning: [https://en.wikipedia.org/wiki/Decision\_tree\_pruning][1]
+- cons
+They can be extremely sensitive to small perturbations in the data: a slight change can result in a drastically different tree.
+They can easily overfit. This can be negated by validation methods and pruning, but this is a grey area.
+They can have problems out-of-sample prediction (this is related to them being non-smooth).
+Some of these are related to the problem of multicollinearity: when two variables both explain the same thing, a decision tree will greedily choose the best one, whereas many other methods will use them both. Ensemble methods such as random forests can negate this to a certain extent, but you lose the ease of understanding.
+
+However the biggest problem, from my point of view at least, is the lack of a principled probabilistic framework. Many other methods have things like confidence intervals, posterior distributions etc., which give us some idea of how good a model is. A decision tree is ultimately an ad hoc heuristic, which can still be very useful (they are excellent for finding the sources of bugs in data processing), but there is the danger of people treating the output as "the" correct model (from my experience, this happens a lot in marketing).
 
 ## SVM - Support Vector Machine
 

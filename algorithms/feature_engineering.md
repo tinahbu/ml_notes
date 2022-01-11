@@ -3,15 +3,18 @@
 ## Feature Selection
 
 - benefits 
-    - smaller dimensionality
+    - escape curse of dimensionality
     - faster model training
     - reduces the model complexity, easier to interpret
-    - improves the accuracy
+    - occam's razor: we like simple and explainable models
+    - improves the accuracy: garbage in garbage out
     - reduces overfitting
 - what features & why
 - any situations this feature will not reflect my desired outcome?
 
 ### Filter Methods 
+
+specify some metric and filter features
 
 considers the relationship between features and the target variable to compute the importance of features
 
@@ -22,9 +25,11 @@ considers the relationship between features and the target variable to compute t
     - we can select our features by ranking their mutual information with the target variable
     - does well with the non-linear relationship between feature and target variable
 - Pearson’s Correlation
-    - quantifying linear dependence between two continuous variables X and Y
+    - check the absolute value of the Pearson's correlation between target and numerical features
+	- keep the top n features
+    - quantifying linear dependence between two continuous variables x and y
     - value varies from $-1$ to $+1$
-    - $ρ_{X,Y} = \dfrac{cov(X, Y)}{\sigma_x \sigma_y}$ where
+    - $ρ_{x, y}} = \dfrac{cov(x, y)}{\sigma_x \sigma_y}$ where
         - ${cov}$ is the covariance
         - $\sigma_x$ is the standard deviation of $X$
         - $\sigma_Y$ is the standard deviation of $Y$
@@ -37,6 +42,8 @@ considers the relationship between features and the target variable to compute t
     - provides a statistical test of whether the means of several groups are equal or not
 - Chi-Square
     - a statistical test applied to the groups of categorical features to evaluate the likelihood of correlation or association between them using their frequency distribution
+    - calculate the chi-square metric between the target and numerical variables
+	- only select the variable with the maximum chi-square values
 - Variance threshold
     - This method removes features with variation below a certain cutoff
     - The idea is when a feature doesn’t vary much within itself, it generally has very little predictive power.
@@ -51,6 +58,8 @@ generate models with a subsets of feature and gauge their model performances.
     - For data with n features, we create n models with each of the feature, select the best predictive feature. then create n-1 models with each of the remaining feature, select the best second feature. repeat until a subset of m features are selected/adding new feature doesnt improve the model performance.
 - backward elimination
     - start with all the features and removes the least significant feature at each iteration
+- recursive feature elimination
+    - select features recursively considering smaller and smaller set of features
 - greedy search, expensive to train so many models
 
 ### Embedded Methods
@@ -59,7 +68,7 @@ generate models with a subsets of feature and gauge their model performances.
 - Lasso regression
     - L1 regularization: absolute value of the coefficients
     - preventing overfitting also reduces the coefficients of less important features to zero
-- Tree based models
+- Tree based models like random forest
     - tree models calculate feature importance for they need to keep the best performing features as close to the root of the tree. Constructing a decision tree involves calculating the best predictive feature.
     - The feature importance in tree based models are calculated based on Gini Index, Entropy or Chi-Square value
 
@@ -92,6 +101,8 @@ Transforms a large set of variables into a smaller one that still contains most 
             the line in which the projection of the points (red dots) is the most spread out. Or mathematically speaking, it’s the line that maximizes the variance (the average of the squared distances from the projected points (red dots) to the origin).
             the eigenvectors of the Covariance matrix are actually the directions of the axes where there is the most variance (most information) and that we call Principal Components. And eigenvalues are simply the coefficients attached to eigenvectors, which give the amount of variance carried in each Principal Component.
             By ranking your eigenvectors in order of their eigenvalues, highest to lowest, you get the principal components in order of significance.
+        - Why SVD instead of diagolization?
+            - using the SVD to perform PCA makes much better sense numerically than forming the covariance matrix to begin with, since the formation of **𝐗****𝐗**⊤XX⊤ can cause loss of precision.
     - Feature vector
         - Take the eigenvalues $\lambda_1, \lambda_2, ..., \lambda_p$ and sort them from largest to smallest
         - take the first $k$ columns
@@ -110,8 +121,6 @@ Transforms a large set of variables into a smaller one that still contains most 
 - What are the two pre-processing steps that should be applied before doing PCA?
 
 - singular value decomposition
-    - Why SVD instead of diagolization?
-    - using the SVD to perform PCA makes much better sense numerically than forming the covariance matrix to begin with, since the formation of **𝐗****𝐗**⊤XX⊤ can cause loss of precision.
 
 - sammon’s mapping
 
