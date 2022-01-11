@@ -72,9 +72,15 @@
 			- we can be more confident in our algorithm performance
 				- if performance metrics very different across folds -> algorithms inconsistent or data inconsistent
 	- Bootstrap
+		- a resampling technique used to estimate statistics on a population by sampling a dataset with replacement
+		-  a data point in a drawn sample can reappear in future drawn samples as well
+		- bootstrap aggregating (also called bagging). It helps in avoiding overfitting and improves the stability of machine learning algorithms.
+		- In bagging, a certain number of equally sized subsets of a dataset are extracted with replacement. Then, a machine learning algorithm is applied to each of these subsets and the outputs are ensembled as I have illustrated below:
 - time series data
 	- cross-validation
 	- validation set needs to come chronologically after the training subset
+	- In this procedure, there is a series of test sets, each consisting of a single observation. The corresponding training set consists only of observations that occurred prior to the observation that forms the test set. Thus, no future observations can be used in constructing the forecast. The following diagram illustrates the series of training and test sets, where the blue observations form the training sets, and the red observations form the test sets.
+	- The forecast accuracy is computed by averaging over the test sets. This procedure is sometimes known as “evaluation on a rolling forecasting origin” because the “origin” at which the forecast is based rolls forward in time.
 	- forward chaining
 		- multiple train test sets
 		- test sets only have 1 observation
@@ -83,32 +89,51 @@
 		- The forecast accuracy is computed by averaging over the test sets
 
 
-## Bias vs Variance
-
-The bias–variance tradeoff is the property of a model that the variance of the parameter estimated across samples can be reduced by increasing the bias in the estimated parameters. The bias–variance dilemma or bias–variance problem is the conflict in trying to simultaneously minimize these two sources of error that prevent supervised learning algorithms from generalizing beyond their training set.
-
-The bias error is an error from erroneous assumptions in the learning algorithm. High bias can cause an algorithm to miss the relevant relations between features and target outputs (underfitting).
-
-The variance is an error from sensitivity to small fluctuations in the training set. High variance may result from an algorithm modeling the random noise in the training data (overfitting).
-
-The bias–variance decomposition is a way of analyzing a learning algorithm's expected generalization error with respect to a particular problem as a sum of three terms, the bias, variance, and a quantity called the irreducible error, resulting from noise in the problem itself.
-
-![variance vs bias](../pictures/variance_vs_bias.png)
-![bias and variance contributing to total error](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Bias_and_variance_contributing_to_total_error.svg/922px-Bias_and_variance_contributing_to_total_error.svg.png)
-- reduce variance & bias
-	- reduce variance: larger training set; reduce model complexity; bagging
-	- reduce bias: add features; more complex model; boosting
-	- linear and Generalized linear models can be regularized to decrease their variance at the cost of increasing their bias
-	- In artificial neural networks, the variance increases and the bias decreases as the number of hidden units increase, although this classical assumption has been the subject of recent debate. Like in GLMs, regularization is typically applied.
-	- In k-nearest neighbor models, a high value of k leads to high bias and low variance.
-	- In instance-based learning, regularization can be achieved varying the mixture of prototypes and exemplars.
-	- In decision trees, the depth of the tree determines the variance. Decision trees are commonly pruned to control variance.
-
 ## Model Evaluation
+
 - what to evaluate
 	- tune hyperparameters 
 	- how big training set needs to be
 	- how frequent to retrain the model
+- model performance metrics
+	- accuracy
+	- confusion matrix
+		![confusion matrix](https://cdn.analyticsvidhya.com/wp-content/uploads/2020/06/Basic-Confusion-matrix.png)
+	- precision
+		- positive predictive value
+		- out of all positive predictions, how much are actually positive 
+		- precision = TP / (TP + FP)
+		- TP: type I error, FN: type II error
+	- recall/sensitivity
+		- true positive rate
+		- out of all positive classes, how much we predicted positive
+		- recall = TP / (TP + FN)
+	- F1 score
+		- F1 = 2 Precision * Recall / (Precision + Recall)
+		- weighted average of the precision and recall 
+	- specificity
+		- specificity = TN / (TN + FP)
+		- out of all the negative classes, how much we predicted negative
+	- TPR (true positive rate) = recall = TP / (TP + FN) 
+	- FPR (false positive rate) = 1 - specificity = FP / (TN + FP)
+	- ROC (receiver operating characteristics)
+		- binary classification
+		- balance between sensitivity (TPR, y-axis) and specificity (fall-out or the probability for triggering a false alarm) (FPR, x-axis)
+		- contrast between TP and FP at various threshold for assigning observations to a given class
+		- a probability curve that plots the TPR against FPR at various classification threshold 0and essentially separates the 'signal' from the 'noise' 
+	- AUC (area under the curve)
+		- represents the degree or measure of separability, how much the model is capable of distinguishing between classes
+		-  used as a summary of the ROC curve
+		- When AUC = 1, then the classifier is able to perfectly distinguish between all the Positive and the Negative class points correctly. If, however, the AUC had been 0, then the classifier would be predicting all Negatives as Positives, and all Positives as Negatives. When AUC=0.5, then the classifier is not able to distinguish between Positive and Negative class points. Meaning either the classifier is predicting random class or constant class for all the data points.
+		- AUC is desirable for the following two reasons:
+			- AUC is scale-invariant. It measures how well predictions are ranked, rather than their absolute values.
+			- AUC is classification-threshold-invariant. It measures the quality of the model's predictions irrespective of what classification threshold is chosen.
+		- However, both these reasons come with caveats, which may limit the usefulness of AUC in certain use cases:
+			- Scale invariance is not always desirable. For example, sometimes we really do need well calibrated probability outputs, and AUC won’t tell us about that
+			- Classification-threshold invariance is not always desirable. In cases where there are wide disparities in the cost of false negatives vs. false positives, it may be critical to minimize one type of classification error. For example, when doing email spam detection, you likely want to prioritize minimizing false positives (even if that results in a significant increase of false negatives). AUC isn't a useful metric for this type of optimization.
+
+	- t-test in the context of machine learning
+
 
 ## Choose the right loss function
 
@@ -214,12 +239,13 @@ The bias–variance decomposition is a way of analyzing a learning algorithm's e
 		- adding fractions of past gradients to calculate current gradients
 
 ## Model Categories
+
 - generative
 	- learn categories of data 
-	- learn the actual joint probability P(x, y)
+	- learn the actual joint probability $P(X, y)$
 - discrimative
 	- learns the distinction between different categories
-	- learns the conditional distribution P(y|x)
+	- learns the conditional distribution $P(y|X)$
 - Convex
 	- smooth = infinitely derivable
 	- convex = has a global optimum

@@ -53,6 +53,7 @@ What is confidence interval?
 What is standard error?
 
 ### Bayesian Machine Learning
+
 What are the differences between “Bayesian” and “Freqentist” approach for Machine Learning?
 Compare and contrast maximum likelihood and maximum a posteriori estimation.
 How does Bayesian methods do automatic feature selection?
@@ -62,25 +63,6 @@ When will you use Bayesian methods instead of Frequentist methods?
 ### Reinforcement Learning
 
 - Markov Decision Process
-
-### NLP
-What is WORD2VEC?
-What is t-SNE? Why do we use PCA instead of t-SNE?
-What is sampled softmax?
-Why is it difficult to train a RNN with SGD?
-How do you tackle the problem of exploding gradients?
-What is the problem of vanishing gradients?
-How do you tackle the problem of vanishing gradients?
-Explain the memory cell of a LSTM.
-What type of regularization do one use in LSTM?
-What is Beam Search?
-How to automatically caption an image?
-
-
-- TFIDF
-- tokenization
-
-### Time Series
 
 
 ### Ensemble
@@ -120,48 +102,6 @@ How to automatically caption an image?
 	- that often considers heterogeneous weak learners, learns them in parallel and combines them by training a meta-model to output a prediction based on the different weak models predictions
 	- Very roughly, we can say that bagging will mainly focus at getting an ensemble model with less variance than its components whereas boosting and stacking will mainly try to produce strong models less biased than their components (even if variance can also be reduced).
 
-## Evaluation
-- accuracy
-- precision
-	- positive predictive value
-	- out of all positive predictions, how much are actually positive 
-	- precision = TP / (TP + FP)
-- recall
-	- true positive rate
-	- out of all positive classes, how much we predicted positive
-	- recall = TP / (TP + FN)
-- F1 score
-	- F1 = 2 Precision \* Recall / (Precision + Recall)
-	- weighted average of the precision and recall 
-- ROC curve
-	- receiver operating characteristics 
-	- balance between sensitivity (TP, y-axis) and specificity (fall-out or the probability for triggering a false alarm) (FP, x-axis)
-	- contrast between TP and FP at various threshold for assigning observations to a given class
-- AUC
-	- area under the curve
-	- represents the degree or measure of separability, how much the model is capable of distinguishing between classes
-- sensitivity
-- specificity
-- TP: type I error
-- FN: type II error
-- t-test in the context of machine learning
-- 
-## Neural Networks
-State the universal approximation theorem? What is the technique used to prove that?
-What is a Borel measurable function?
-Given the universal approximation theorem, why can’t a Multi Layer Perceptron (MLP) still reach an arbitrarily small positive error?
-
-what is the mathematical motivation of Deep Learning as opposed to standard Machine Learning techniques?
-In standard Machine Learning vs. Deep Learning, how is the order of number of samples related to the order of regions that can be recognized in the function space?
-What are the reasons for choosing a deep model as opposed to shallow model?
-How Deep Learning tackles the curse of dimensionality?
-
-How will you implement dropout during forward and backward pass?
-What do you do if Neural network training loss/testing loss stays constant? (ask if there could be an error in your code, going deeper, going simpler…)
-Why do RNNs have a tendency to suffer from exploding/vanishing gradient? How to prevent this? (Talk about LSTM cell which helps the gradient from vanishing, but make sure you know why it does so. Talk about gradient clipping, and discuss whether to clip the gradient element wise, or clip the norm of the gradient.)
-Do you know GAN, VAE, and memory augmented neural network? Can you talk about it?
-Does using full batch means that the convergence is always better given unlimited power? (Beautiful explanation by Alex Seewald: https://www.quora.com/Is-full-batch-gradient-descent-with-unlimited-computer-power-always-better-than-mini-batch-gradient-descent)
-What is the problem with sigmoid during backpropagation? (Very small, between 0.25 and zero.)
 
 ## Sequence Models
 Write the equation describing a dynamical system. Can you unfold it? Now, can you use this to describe a RNN?

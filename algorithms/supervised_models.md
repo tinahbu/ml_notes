@@ -11,7 +11,7 @@
 - binary classification
 - hypothesis: $Z = WX + B$, $hΘ(x) = sigmoid (Z)$
 	- linear classifier (or single layer perceptron)
-- sigmoid (logistic) function: $1 / (1 + e^{-z})$
+- sigmoid (logistic) function: $\sigma(z) = 1 / (1 + e^{-z})$
 	- $(-∞,+∞)$ -> $(0, 1)$
 	- predictions -> probabilities of classes
 	- ![img][image-3]
@@ -25,6 +25,15 @@
 		- ![\_images/logistic\_cost\_function\_joined.png](/Users/Tina/Google Drive/ML-Interview/assets/logistic\_cost\_function\_joined.png)
 - MLE
 	- ![logistic\_regression\_mle](/Users/Tina/Google Drive/Job\_Application/c3.ai/logistic\_regression\_mle.png)
+- Strengths
+	- outputs have a nice probabilistic interpretation instead of just a class prediction
+	- algorithm can be regularized to avoid overfitting
+	- Logistic models can be updated easily with new data using stochastic gradient descent
+- Weaknesses
+	- Logistic regression tends to underperform when there are multiple or non-linear decision boundaries. They are not flexible enough to naturally capture more complex relationships.
+	- Many of the pros and cons of the linear regression model also apply to the logistic regression model. Logistic regression has been widely used by many different people, but it struggles with its restrictive expressiveness (e.g. interactions must be added manually) and other models may have better predictive performance.
+	- interpretation is more difficult because the interpretation of the weights is multiplicative and not additive.
+	- Logistic regression can suffer from complete separation. If there is a feature that would perfectly separate the two classes, the logistic regression model can no longer be trained. This is because the weight for that feature would not converge, because the optimal weight would be infinite. This is really a bit unfortunate, because such a feature is really useful. But you do not need machine learning if you have a simple rule that separates both classes. The problem of complete separation can be solved by introducing penalization of the weights or defining a prior probability distribution of weights.
 - Cons
 	- can't apply to linearly separable data
 		- max data likelihood, cost surface will have a surface
@@ -208,8 +217,21 @@ Logistic regression vs. SVMs: When to use which one?
 	- number of features in each tree
 
 ### Gradient Boosting
+
 - Gradient boosting build trees one at a time, where each new tree helps to correct errors by previously trained tree (boosting of decision tree)
-- GBM
+- It performs the optimization in function space (rather than in parameter space) which makes the use of custom loss functions much easier.
+- Boosting focuses step by step on difficult examples that gives a nice strategy to deal with unbalanced datasets by strengthening the impact of the positive class.
+- GBMs are more sensitive to overfitting if the data is noisy.
+- Training generally takes longer because of the fact that trees are built sequentially. 
+- There are typically three parameters - number of trees, depth of trees and learning rate, and the each tree built is generally shallow.
+- weak classifier
+
+
+Boosting is based on weak learners (high bias, low variance). In terms of decision trees, weak learners are shallow trees, sometimes even as small as decision stumps (trees with two leaves). Boosting reduces error mainly by reducing bias (and also to some extent variance, by aggregating the output from many models).
+
+On the other hand, Random Forest uses fully grown decision trees (low bias, high variance). It tackles the error reduction task in the opposite way: by reducing variance. The trees are made uncorrelated to maximize the decrease in variance, but the algorithm cannot reduce bias (which is slightly higher than the bias of an individual tree in the forest). Hence the need for large, unpruned trees, so that the bias is initially as low as possible.
+
+
 - XGBoost
 - LightGBM
 	- faster training and lower memory usage

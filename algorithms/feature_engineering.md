@@ -177,12 +177,13 @@ df = pd.DataFrame({"col1": ["Sun", "Sun", "Moon", "Earth", "Moon", "Venus"]})
 - dummy encoding vs one-hot encoding
     - dummy encoding
         - n level categorical variable -> n-1 dummy variables
-        - can include an intercept
+        - should include an intercept unless you have standardized all your variables, in which case the intercept is zero.
     - one hot encoding
         - n level categorical variable -> n variables
         - perfect multi-collinearity -> big issue in linear regression
 			- unsolvable for linear regression
-			- need to set intercept to be false 
+			- need to set intercept to be false
+        - set intercept to be false or else incur perfect collinearity 
 
 - `sklearn` `OneHotEncoder` object/function 
  
@@ -358,3 +359,5 @@ df["hour"] = df["col1"].dt.hour
     - std $ = 1$ (unit standard deviation)
 - use when some feature with larger values can dominate completely the others with smaller values
 - will not affect outliers
+
+## Missing Data

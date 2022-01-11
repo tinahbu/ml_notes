@@ -1,4 +1,3 @@
-
 # Overfitting & Regularization
 
 ## What is Overfitting?
@@ -37,7 +36,70 @@
 |  bias  | underfitting   |  bad accuracy  | erroneous/simplistic assumption   |
 |  variance  |  overfitting  | sensitive, don’t generalize  |  too complicated, learned noise  |
 
+## Bias vs Variance
+
+The bias–variance tradeoff is the property of a model that the variance of the parameter estimated across samples can be reduced by increasing the bias in the estimated parameters. The bias–variance dilemma or bias–variance problem is the conflict in trying to simultaneously minimize these two sources of error that prevent supervised learning algorithms from generalizing beyond their training set.
+
+The bias error is an error from erroneous assumptions in the learning algorithm. High bias can cause an algorithm to miss the relevant relations between features and target outputs (underfitting).
+
+The variance is an error from sensitivity to small fluctuations in the training set. High variance may result from an algorithm modeling the random noise in the training data (overfitting).
+
+The bias–variance decomposition is a way of analyzing a learning algorithm's expected generalization error with respect to a particular problem as a sum of three terms, the bias, variance, and a quantity called the irreducible error, resulting from noise in the problem itself.
+
+![variance vs bias](../pictures/variance_vs_bias.png)
+![bias and variance contributing to total error](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Bias_and_variance_contributing_to_total_error.svg/922px-Bias_and_variance_contributing_to_total_error.svg.png)
+- reduce variance & bias
+	- reduce variance: larger training set; reduce model complexity; bagging
+	- reduce bias: add features; more complex model; boosting
+	- linear and Generalized linear models can be regularized to decrease their variance at the cost of increasing their bias
+	- In artificial neural networks, the variance increases and the bias decreases as the number of hidden units increase, although this classical assumption has been the subject of recent debate. Like in GLMs, regularization is typically applied.
+	- In k-nearest neighbor models, a high value of k leads to high bias and low variance.
+	- In instance-based learning, regularization can be achieved varying the mixture of prototypes and exemplars.
+	- In decision trees, the depth of the tree determines the variance. Decision trees are commonly pruned to control variance.
+
+
+## Ensemble Techniques
+
+Ensemble learning is a machine learning paradigm where multiple models (often called “weak learners”) are trained to solve the same problem and combined to get better results. The main hypothesis is that when weak models are correctly combined we can obtain more accurate and/or robust models.
+
+Indeed, to be able to “solve” a problem, we want our model to have enough degrees of freedom to resolve the underlying complexity of the data we are working with, but we also want it to have not too much degrees of freedom to avoid high variance and be more robust. This is the well known bias-variance tradeoff.
+      
+In ensemble learning theory, we call weak learners (or base models) models that can be used as building blocks for designing more complex models by combining several of them. Most of the time, these basics models perform not so well by themselves either because they have a high bias (low degree of freedom models, for example) or because they have too much variance to be robust (high degree of freedom models, for example). Then, the idea of ensemble methods is to try reducing bias and/or variance of such weak learners by combining several of them together in order to create a strong learner (or ensemble model) that achieves better performances.
+
+### Bagging
+
+- a single base learning algorithm is used (homogeneous weak learners)
+- learns them independently from each other in parallel and combines them following some kind of deterministic averaging process
+- use bootstrap samples (representativity and independence) to fit models that are almost independent
+- bootstrap
+	- This statistical technique consists in generating samples of size B (called bootstrap samples) from an initial dataset of size N by randomly drawing with replacement B observations.
+	- approximatively independent and identically distributed (i.i.d.)
+	- average for regression / majority vote for classification
+	- can be parallelized
+- The random forest approach is a bagging method where deep trees, fitted on bootstrap samples, are combined to produce an output with lower variance. However, random forests also use another trick to make the multiple fitted trees a bit less correlated with each others: when growing each tree, instead of only sampling over the observations in the dataset to generate a bootstrap sample, we also sample over features and keep only a random subset of them to build the tree.
+
+### Boosting
+
+- homegenous weak learners
+- learns them sequentially in a very adaptative way (a base model depends on the previous ones) and combines them following a deterministic strategy
+- iteratively
+- boosting is a technique that consists in fitting sequentially multiple weak learners in a very adaptative way: each model in the sequence is fitted giving more importance to observations in the dataset that were badly handled by the previous models in the sequence. Intuitively, each new model focus its efforts on the most difficult observations to fit up to now, so that we obtain, at the end of the process, a strong learner with lower bias (even if we can notice that boosting can also have the effect of reducing variance).
+- adaboost
+	- Adaptive boosting updates the weights attached to each of the training dataset observations
+	- define our ensemble model as a weighted sum of L weak learners 
+	- $s_L(.) = \sum_{l=1}^{L} c_l * w_l(.)$ where $c_l$ is a coefficient and $w_l$ is a weak learner
+- gradient boosting
+	- updates the value of these observations
+
+### Stacking
+
+- heterogeneous weak learners
+- learns them in parallel and combines them by training a meta-model to output a prediction based on the different weak models predictions
+
+Very roughly, we can say that bagging will mainly focus at getting an ensemble model with less variance than its components whereas boosting and stacking will mainly try to produce strong models less biased than their components (even if variance can also be reduced).
+
 ## What is Regularization?
+
 - A theoretical justification for regularization is that it attempts to impose Occam's razor on the solution (as depicted in the figure above, where the green function, the simpler one, may be preferred). 
 - From a Bayesian point of view, many regularization techniques correspond to imposing certain prior distributions on model parameters.
 - Ian Goodfellow: Any modification we make to the learning algorithm that is intended to reduce the generalization error, but not its training error
@@ -48,16 +110,13 @@
 	- improves generalizability of a learned model
 - $\lambda$
 	- how much we want to penalize the flexibility of our model
-	- larger $\lambda$ -\> less variance, more bias -\> underfitting
+	- larger $\lambda$ -> less variance, more bias -> underfitting
 	- tuned with cross-validation
 
 ## Regularization Types
-- weight penalty L1 and L2
-- dataset augmentation
-- early stopping
-- dropout layer
 
-## Weight Penalty
+### Weight Penalty
+
 - assumption: a model with small weights is simpler than a model with large weights
 - Lasso (L1)
 	- Least Absolute Deviations: sum of absolute values of weights
@@ -96,24 +155,37 @@
 	- a mix of both L1 and L2 regularizations. 
 	- A penalty is applied to the sum of the absolute values and to the sum of the squared values. 
 
-## Dataset Augmentation
+### Dataset Augmentation
 - creating synthetic data for training
 - expand the dataset but reflect real world variations
 - images
 	- translating the picture a few pixels, rotation, scaling
 	- add random negative examples (unrelated pictures)
 
-## Early Stopping
+### Early Stopping
 - stops training once performance on validation gets worse
 - tuning epochs/steps
 
 ![][image-4]
 
-## Dropout
+### Dropout
 
+![dropout](https://deepnotes.io/public/images/dropout.jpeg)
 - removing some random neurons while training 
 	- with all their incoming and outgoing connections
 	- hidden or input layer
+- forward propagation
+	- give each neuron a probability $p$ of being turned off
+- backward propagation
+	- We simply back propagate the gradients through the neurons that were not killed off during the forward pass, as changing the output of the killed neurons doesn’t change the output, and thus their gradient is 0.
+- testing
+	- Inverted Dropout: scales the output activation during training phase by $1/p$ so that we can leave the network during testing phase untouched.
+- all neurons are used for prediction
+- hyperparameter: $p$ as the probability of keeping a unit
+	- typical value $p\geq0.5$
+	```python
+		hidden = tf.nn.dropout(hidden, 0.5, seed=SEED
+	```
 - why dropout works
 	- neurons become more insensitive to the weights of other nodes
 	- less co-adaptive
@@ -122,14 +194,9 @@
 	- or can be viewed as an ensemble technique that averages multiple models
 	- training a collection of $2^n$ thinned networks with parameter sharing
 	- bagging
-- hyperparameter: $p$ as the probability of keeping a unit
-	- typical value $p\geq0.5$
-	```python
-		hidden = tf.nn.dropout(hidden, 0.5, seed=SEED
-	```
-- and adding them back during backpropagagtion?
-- How will you implement dropout during forward and backward pass?
-- all neurons are used for prediction
+	- Heuristically, using dropout is like we are training on different set of network. So the output produced is like using an averaging scheme on output of a large number of networks, which is often found to be powerful way of reducing overfitting.
+	- Also, since a neuron cannot rely on the presence of other neurons, it is forced to learn features that are not dependent on the presence of other neurons. Thus network learns robust features, and are less susceptible to noise.
+- Since dropout does not constraints the parameter, applying L2 regularization or any other parameter based regularization should be used along with dropout. 
 
 ## Dense-Sparse-Dense Training
 
