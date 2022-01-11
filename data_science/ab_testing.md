@@ -1,0 +1,22 @@
+### Hypothesis Testing | A/B Testing
+
+- We can interpret data by assuming a specific structure our outcome and use statistical methods to confirm or reject the assumption. The assumption is called a hypothesis and the statistical tests used for this purpose are called statistical hypothesis tests.
+- The assumption of a statistical test is called the null hypothesis, or hypothesis 0 (H0 for short).
+- The strength of evidence in support of a null hypothesis is measured by the **P-value**
+	- **If p-value \> alpha**: Fail to reject the null hypothesis (i.e. not signifiant result).
+	- **If p-value \<= alpha**: Reject the null hypothesis (i.e. significant result).
+- steps
+	- choose and characterize metric to evaluate your experiment
+		- sanity check: invariant metrics, things that shouldn’t change across control and treatment groups
+		- sums and counts
+		- distribution: mean, median, percentiles
+		- probability and rates: click-through rate
+		- ratios
+	- choose 
+		- significance level (alpha)
+		- statistical power (1-beta)
+		- practical significance level: you really want to launch the change
+	- calculate required sample size
+	- take sample for control/treatment groups
+	- run the test
+	- analyze results
