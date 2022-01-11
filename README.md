@@ -1,3 +1,3 @@
 # My Machine Learning Notes
 
-I push my ML related notes here. 
+An semi-organized folder of some ML related notes. 
